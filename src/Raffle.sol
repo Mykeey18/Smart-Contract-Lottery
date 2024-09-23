@@ -26,7 +26,7 @@
 
 pragma solidity 0.8.19;
 
-import {VRFConsumerBaseV2Plus} from "@chainlink/contracts@1.2.0/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 
 /**
  * @title A Raffle Contrac
@@ -35,7 +35,7 @@ import {VRFConsumerBaseV2Plus} from "@chainlink/contracts@1.2.0/src/v0.8/vrf/dev
  * @dev Implements Chainlink VRFv2.5
  */
 
-contract Raffle {
+contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle_NotEnoughFeeToEnterRaffle();
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
@@ -45,7 +45,11 @@ contract Raffle {
 
     event RaffleEntered(address indexed player); // meaning a new player has enter the raffle
 
-    constructor(uint256 entranceFee, uint256 interval) {
+    constructor(
+        uint256 entranceFee,
+        uint256 interval,
+        address vrfCoordinator
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = entranceFee;
         i_interval = interval;
         s_lastTimeStamp = block.timestamp;
@@ -71,21 +75,26 @@ contract Raffle {
         if ((block.timestamp - s_lastTimeStamp) > i_interval) {
             revert();
         }
-        requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: keyHash,
-                subId: s_subscriptionId,
-                requestConfirmations: requestConfirmations,
-                callbackGasLimit: callbackGasLimit,
-                numWords: numWords,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({
-                        nativePayment: enableNativePayment
-                    })
-                )
-            })
-        );
+        // requestId = s_vrfCoordinator.requestRandomWords(
+        //     VRFV2PlusClient.RandomWordsRequest({
+        //         keyHash: keyHash,
+        //         subId: s_subscriptionId,
+        //         requestConfirmations: requestConfirmations,
+        //         callbackGasLimit: callbackGasLimit,
+        //         numWords: numWords,
+        //         extraArgs: VRFV2PlusClient._argsToBytes(
+        //             VRFV2PlusClient.ExtraArgsV1({
+        //                 nativePayment: enableNativePayment
+        //             })
+        //         )
+        //     })
+        // );
     }
+
+    function fulfillRandomWords(
+        uint256 requestId,
+        uint256[] calldata randomWords
+    ) internal virtual override {}
 
     /**
      * Getter Function

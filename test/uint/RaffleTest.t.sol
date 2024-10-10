@@ -6,6 +6,7 @@ import {Test} from "forge-std/Test.sol";
 import {Raffle} from "src/Raffle.sol";
 import {DeployRaffle} from "script/DeployRaffle.s.sol";
 import {HelperConfig} from "script/HelperConfig.s.sol";
+import {Vm} from "forge-std/Vm.sol";
 
 contract RaffleTest is Test {
     Raffle public raffle;
@@ -161,5 +162,29 @@ contract RaffleTest is Test {
             abi.encodeWithSelector(Raffle.Raffle__upKeepNotNeeded.selector, currentBalance, numPlayers, rState)
         );
         raffle.performUpkeep("");
+    }
+
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public {
+        // Testing if `performUpkeep` updates the raffle state and emit the event we created:
+
+        //Arrange
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.recordLogs();
+        raffle.performUpkeep("");
+        // This means that whatever events that are emitted by the peerformUpkeep fn the "vm.recordLogs" should keeep tracks of them and stick them into an array
+        Vm.Log[] memory entries = vm.getRecordedLogs(); 
+        //All  the events that are recorded in the recordLogs should be sticked into entries array
+        bytes32 requestId = entries[1].topics[1];
+        // logs are stored in bytes
+
+        //Assert
+        Raffle.RaffleState raffleState = raffle.getRaffleState();
+        assert(uint256(requestId) > 0);
+        assert(uint256(raffleState) == 1);
     }
 }

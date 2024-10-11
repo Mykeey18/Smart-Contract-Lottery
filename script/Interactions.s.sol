@@ -45,7 +45,9 @@ contract FundSubscription is Script, codeConstants {
         fundSubscription(vrfCoordinator, subscriptionId, linkToken, account);
     }
 
-    function fundSubscription(address vrfCoordinator, uint256 subscriptionId, address linkToken, address account) public {
+    function fundSubscription(address vrfCoordinator, uint256 subscriptionId, address linkToken, address account)
+        public
+    {
         console.log("Funding subscription:", subscriptionId);
         console.log("Using vrfCoordinator:", vrfCoordinator);
         console.log("On ChainId", block.chainid);
@@ -70,7 +72,7 @@ contract AddConsumer is Script {
     function addConsumerUsingConfig(address mostRecentlyDeployed) public {
         HelperConfig helperConfig = new HelperConfig();
         address vrfCoordinator = helperConfig.getConfig().vrfCoordinator;
-        uint256 subId = helperConfig.getConfig().subscriptionId;       
+        uint256 subId = helperConfig.getConfig().subscriptionId;
         address account = helperConfig.getConfig().account;
 
         addConsumer(mostRecentlyDeployed, vrfCoordinator, subId, account);
